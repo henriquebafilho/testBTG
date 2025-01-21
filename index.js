@@ -240,13 +240,13 @@ server.post("/vendeAcao/:nome/:quantidade", async (req, res) => {
     }
 });
 
-server.get("/transacoes/:email", (req, res) => {
+server.get("/transacoes", (req, res) => {
     res.status(201).json({
         transacoes: usuarioLogado.transacoes
     })
 });
 
-server.get("/minhasAcoes/:email", (req, res) => {
+server.get("/minhasAcoes", (req, res) => {
     let qtdAcoes = 0;
     let somaPrecoAcoes = 0;
 
