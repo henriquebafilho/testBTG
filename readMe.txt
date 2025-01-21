@@ -1,3 +1,7 @@
+Challenge BTG
+
+-Por motivos didáticos, o saldo inicial de cada usuário é 200.00 e o preço das ações varia de 1.00 a 200.00 em cada execução.
+
 Fluxo:
 -Cadastrar usuário
 -Login
@@ -6,7 +10,6 @@ Fluxo:
 -ver minhas ações
 -Vender ações
 -ver histórico de transações
-
 
 Exemplos:
 -Cadastrar usuário

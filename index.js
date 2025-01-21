@@ -94,7 +94,7 @@ server.post("/login", async (req, res) => {
         if (!senhaCorreta) {
             throw {
                 status: 400,
-                message: "Erro: Senha incorreta."
+                message: "Erro: Usuário ou senha incorretos."
             }
         }
 
