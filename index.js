@@ -4,9 +4,10 @@ const jwt = require('jsonwebtoken');
 const server = express();
 const PORT = 4000;
 const { validaSenha, getAcoes, validarEmail } = require("./funcoes.js");
+//const nodemailer = require('nodemailer');
 require('dotenv').config();
-server.use(express.json());
 
+server.use(express.json());
 server.listen(PORT, () => {
     console.log("Servidor rodando!");
 });
@@ -14,6 +15,19 @@ server.listen(PORT, () => {
 let usuarios = [];
 let acoesMercado = getAcoes();
 let usuarioLogado;
+/* let transporter = nodemailer.createTransport({
+    host: "smtp.gmail.com",
+    service: 'gmail',
+    port: 587,
+    auth: {
+        user: process.env.email,
+        pass: process.env.senha
+    },
+    secure: true,
+    tls: {
+        rejectUnauthorized: false
+    }
+}); */
 
 // Retornar usuários
 server.get("/usuarios", (req, res) => {
@@ -51,6 +65,7 @@ server.post("/usuarios", async (req, res) => {
                 message: "Erro: Usuário já cadastrado."
             }
         }
+
         // Verificação de força da senha
         const senhaValidada = validaSenha(senha);
         if (!senhaValidada.isValid) {
@@ -64,6 +79,17 @@ server.post("/usuarios", async (req, res) => {
 
         usuarios.push(usuario);
 
+        // Envia mensagem para o e-mail cadastrado
+        /* transporter.sendMail({
+            from: 'Teste BTG <hbaf71@gmail.com>',
+            to: email,
+            subject: "Cadastro concluído com sucesso!",
+            text: "Olá " + nome + ", seu cadastro no BTG foi concluído com sucesso."
+        }).then(message => {
+            console.log(message);
+        }).catch(err => {
+            console.error(err);
+        }); */
         res.status(201).json({ message: "Usuário criado com sucesso!" });
     } catch (error) {
         console.error(error);
@@ -195,28 +221,33 @@ server.post("/vendeAcao/:nome/:quantidade", async (req, res) => {
         let acabaramAcoes = false;
 
         // Verifica se o usuário possui a ação
-        const acao = minhasAcoes.filter((a) => a.nomeAcao === nome)[0];
-        if (!acao) {
+        const minhaAcao = minhasAcoes.filter((a) => a.nomeAcao === nome)[0];
+        if (!minhaAcao) {
             throw {
                 status: 400,
-                message: `Erro: Ação ${nome} não encontrada.`
+                message: `Erro: Você não possui a ação ${nome}.`
             }
         }
 
-        if (acao.qtdAcoes < quantidade) {
+        if (minhaAcao.qtdAcoes < quantidade) {
             throw {
                 status: 400,
-                message: `Erro: Você não pode vender ${quantidade} ${quantidade > 1 ? "ações" : "ação"} de ${nome} pois possui apenas ${acao.qtdAcoes}.`
+                message: `Erro: Você não pode vender ${quantidade} ${quantidade > 1 ? "ações" : "ação"} de ${nome} pois possui apenas ${minhaAcao.qtdAcoes}.`
             }
         }
 
-        usuarioLogado.saldo += acao.precoUnitario * quantidade;
+        // Pega o valor atual da ação no mercado
+        const acaoMercado = acoesMercado.filter((a) => a.nomeAcao === nome)[0];
+        const precoAtual = acaoMercado.precoAtual;
+
+        // Vende a acao pelo preço atual de mercado dela
+        usuarioLogado.saldo += precoAtual * quantidade;
 
         usuarioLogado.transacoes.push({
             tipoOperacao: "Venda",
-            nomeAcao: acao.nomeAcao,
+            nomeAcao: minhaAcao.nomeAcao,
             qtdAcoes: parseInt(quantidade, 10),
-            precoUnitario: acao.precoAtual,
+            precoUnitario: precoAtual,
             dataTransacao: new Date()
         });
 
@@ -255,7 +286,8 @@ server.get("/minhasAcoes", (req, res) => {
         somaPrecoAcoes += a.qtdAcoes * a.precoUnitario;
     });
 
-    let precoMedio = (somaPrecoAcoes / qtdAcoes).toFixed(2);
+    let precoMedio = qtdAcoes > 0 ? parseFloat((somaPrecoAcoes / qtdAcoes).toFixed(2)) : 0;
+    precoMedio = parseFloat(precoMedio.toFixed(2));
 
     res.status(201).json({
         qtdAcoes,

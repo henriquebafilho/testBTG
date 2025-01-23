@@ -62,3 +62,24 @@ function getPreco() {
     const geraPreco = Math.random() * (200 - 1) + 1;
     return parseFloat(geraPreco.toFixed(2));
 }
+
+/* jwt.verify(req.token, "jwtToken", function(err, data){
+        if(err){
+            res.sendStatus(403);
+        } else{
+            //o desenrolar vem aqui
+            res.json({message: "this is protected"})
+        }
+    }); */
+
+/* export function verificaToken(req, res, next) {
+    const bearerHeader = req.headers["autorization"];
+    if (typeof bearerHeader !== 'undefined') {
+        const bearer = bearerHeader.split(" ");
+        const bearerToken = bearer[1];
+        req.token = bearerToken;
+        next();
+    } else {
+        res.sendStatus(403);
+    }
+} */
